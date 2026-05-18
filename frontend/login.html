@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — HackTrack</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-page">
+
+  <div style="width:100%; max-width:480px;">
+
+    <!-- Logo -->
+    <div style="text-align:center; margin-bottom:28px;">
+      <a href="index.html" class="nav-logo" style="justify-content:center; font-size:24px;">
+        ⚡ <span>Hack</span>Track
+      </a>
+    </div>
+
+    <div class="form-box">
+      <div class="form-title">Welcome back</div>
+      <div class="form-subtitle">Login to continue tracking your hackathons</div>
+
+      <!-- Alert messages -->
+      <div class="alert alert-error" id="error-msg">
+        <span>⚠️</span>
+        <span id="error-text"></span>
+      </div>
+      <div class="alert alert-success" id="success-msg">
+        <span>✅</span>
+        <span id="success-text"></span>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="return false;">
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="you@example.com"
+            required
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button
+          type="button" 
+          class="btn btn-primary btn-full" 
+          id="login-btn"
+          onclick="handleLogin()"
+          >
+          Login →
+        </button>
+
+      </form>
+
+      <div class="divider"><span>or</span></div>
+
+      <div style="text-align:center; font-size:13px; color:var(--text-dim);">
+        Don't have an account?
+        <a href="signup.html" class="form-link">Sign up free</a>
+      </div>
+
+    </div>
+
+    <!-- Back link -->
+    <div style="text-align:center; margin-top:16px;">
+      <a href="index.html" style="color:var(--text-dim); font-size:12px; text-decoration:none;">
+        ← Back to home
+      </a>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // If already logged in, redirect to dashboard
+    console.log("Login clicked");
+    checkAuth().then(user => {
+      if (user) window.location.href = "dashboard.html";
+    });
+    async function handleLogin() {
+      console.log("Login function triggered");
+
+      const email    = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const btn      = document.getElementById("login-btn");
+
+      // Hide old messages
+      hideAlerts();
+
+      // Basic validation
+      if (!email || !password) {
+        showError("Please fill in all fields.");
+        return;
+      }
+
+      // Show loading state
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Logging in...';
+
+      try {
+        console.log("Before fetch");
+        const res = await fetch("http://localhost:5000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",   // Important: send session cookie
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.error || "Login failed.");
+        } else {
+          // Save user info to localStorage for easy access
+          localStorage.setItem("hacktrack_user", JSON.stringify(data.user));
+          showSuccess("Login successful! Redirecting...");
+          setTimeout(() => { window.location.href = "dashboard.html"; }, 800);
+        }
+
+      } catch (err) {
+        showError("Cannot connect to server. Is it running on port 5000?");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "Login →";
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById("error-text").textContent = msg;
+      document.getElementById("error-msg").classList.add("show");
+    }
+
+    function showSuccess(msg) {
+      document.getElementById("success-text").textContent = msg;
+      document.getElementById("success-msg").classList.add("show");
+    }
+
+    function hideAlerts() {
+      document.getElementById("error-msg").classList.remove("show");
+      document.getElementById("success-msg").classList.remove("show");
+    }
+  </script>
+
+</body>
+</html>

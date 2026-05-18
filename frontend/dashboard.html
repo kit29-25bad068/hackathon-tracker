@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — HackTrack</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── Navigation ─────────────────────────────────────────── -->
+  <nav>
+    <a href="index.html" class="nav-logo">⚡ <span>Hack</span>Track</a>
+    <div class="nav-links">
+      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="add.html">+ Add</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="#" onclick="handleLogout()" class="btn-nav" style="background:var(--accent2); border-color:var(--accent2);">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container-wide">
+
+    <!-- ─── Page header ────────────────────────────────────────── -->
+    <div class="page-header">
+      <h1>My Dashboard</h1>
+      <p>Track your hackathon submissions, trust score, and progress</p>
+    </div>
+
+    <!-- ─── Alerts ───────────────────────────────────────────── -->
+    <div class="alert alert-success" id="success-msg" style="margin-bottom:20px;">
+      <span>✅</span><span id="success-text"></span>
+    </div>
+    <div class="alert alert-error" id="error-msg" style="margin-bottom:20px;">
+      <span>⚠️</span><span id="error-text"></span>
+    </div>
+    <div class="alert alert-info" id="info-msg" style="margin-bottom:20px;">
+      <span>ℹ️</span><span id="info-text"></span>
+    </div>
+
+    <div class="dashboard-grid">
+
+      <!-- ─── Sidebar ─────────────────────────────────────────── -->
+      <aside>
+        <div class="sidebar-card">
+          <div class="user-avatar" id="user-avatar">?</div>
+          <div class="user-name" id="user-name">Loading...</div>
+          <div class="user-email" id="user-email"></div>
+
+          <div class="sidebar-stats">
+            <div class="sidebar-stat">
+              <span class="sidebar-stat-label">Raw Points</span>
+              <span class="sidebar-stat-value" id="stat-points">—</span>
+            </div>
+            <div class="sidebar-stat">
+              <span class="sidebar-stat-label">Trust Score</span>
+              <span class="sidebar-stat-value" id="stat-trust">—</span>
+            </div>
+            <div class="sidebar-stat">
+              <span class="sidebar-stat-label">Final Score</span>
+              <span class="sidebar-stat-value" id="stat-final" style="color:var(--green);">—</span>
+            </div>
+          </div>
+
+          <!-- Trust bar -->
+          <div style="margin-top:16px;">
+            <div style="font-size:11px; color:var(--text-dim); margin-bottom:6px;">TRUST LEVEL</div>
+            <div class="trust-bar-wrap">
+              <div class="trust-bar-bg">
+                <div class="trust-bar-fill" id="trust-bar" style="width:0%"></div>
+              </div>
+              <div class="trust-label" id="trust-label">0%</div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
+            <a href="add.html" class="btn btn-primary btn-full">+ Add Hackathon</a>
+            <button class="btn btn-secondary btn-full" onclick="showDevpostModal()">🔗 Link Devpost</button>
+            <button class="btn btn-secondary btn-full" onclick="fetchDevpost()">🔄 Sync Devpost</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ─── Main content ────────────────────────────────────── -->
+      <main>
+
+        <!-- Stats row -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-value" id="total-projects">—</span>
+            <span class="stat-label">Total Projects</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="winner-count" style="color:var(--yellow)">—</span>
+            <span class="stat-label">Wins 🏆</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="devpost-count" style="color:var(--accent2)">—</span>
+            <span class="stat-label">Devpost Projects</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-value" id="validated-count" style="color:var(--green)">—</span>
+            <span class="stat-label">Validated Proofs</span>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('all', this)">All Projects</button>
+          <button class="tab-btn" onclick="switchTab('devpost', this)">Devpost</button>
+          <button class="tab-btn" onclick="switchTab('unstop', this)">Unstop</button>
+          <button class="tab-btn" onclick="switchTab('winner', this)">Wins 🏆</button>
+        </div>
+
+        <!-- Project list -->
+        <div id="projects-container">
+          <div class="empty-state">
+            <span class="empty-icon">⏳</span>
+            <p>Loading your projects...</p>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ─── Devpost Modal ────────────────────────────────────────── -->
+  <div id="devpost-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:300; align-items:center; justify-content:center;">
+    <div style="background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:32px; width:100%; max-width:440px; margin:16px;">
+      <div style="font-family:var(--font-head); font-size:20px; font-weight:800; margin-bottom:6px;">🔗 Link Devpost Profile</div>
+      <div style="color:var(--text-dim); font-size:13px; margin-bottom:20px;">Enter your Devpost profile URL to auto-sync projects</div>
+
+      <div class="form-group">
+        <label>Devpost Profile URL</label>
+        <input type="url" id="devpost-url" placeholder="https://devpost.com/yourusername" />
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <button class="btn btn-primary" style="flex:1" onclick="saveDevpostProfile()">Save & Sync</button>
+        <button class="btn btn-secondary" onclick="closeDevpostModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Chatbot ─────────────────────────────────────────────── -->
+  <div class="chatbot-widget">
+    <div class="chatbot-box" id="chatbot-box">
+      <div class="chatbot-header">🤖 HackBot</div>
+      <div class="chatbot-messages" id="chatbot-messages">
+        <div class="chat-msg bot">Hi! I can suggest hackathons based on your history. Type <strong>"suggest"</strong> to get started!</div>
+      </div>
+      <div class="chatbot-input-row">
+        <input type="text" id="chatbot-input" placeholder="Ask something..." />
+        <button onclick="sendChatMessage()">➤</button>
+      </div>
+    </div>
+    <button class="chatbot-toggle" onclick="toggleChatbot()">🤖</button>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    let allProjects = [];
+    let currentUser = null;
+    let currentTab = "all";
+
+    // ─── Init ─────────────────────────────────────────────────────
+    async function init() {
+      currentUser = await requireAuth(); // redirects to login if not logged in
+      loadUserProfile(currentUser);
+      loadProjects();
+    }
+
+    function loadUserProfile(user) {
+      document.getElementById("user-name").textContent = user.name;
+      document.getElementById("user-email").textContent = user.email;
+      document.getElementById("user-avatar").textContent = user.name.charAt(0).toUpperCase();
+      document.getElementById("stat-points").textContent = user.totalPoints || 0;
+      document.getElementById("stat-trust").textContent = (user.trustScore || 50) + "%";
+      document.getElementById("stat-final").textContent = user.finalScore || 0;
+
+      const trust = user.trustScore || 50;
+      document.getElementById("trust-bar").style.width = trust + "%";
+      document.getElementById("trust-label").textContent = trust + "%";
+    }
+
+    async function loadProjects() {
+      try {
+        const res = await apiFetch("/projects");
+        const data = await res.json();
+        allProjects = data.projects || [];
+        renderProjects(allProjects);
+        updateStats(allProjects);
+      } catch (err) {
+        document.getElementById("projects-container").innerHTML =
+          `<div class="alert alert-error show"><span>⚠️</span><span>Failed to load projects. Is the server running?</span></div>`;
+      }
+    }
+
+    function updateStats(projects) {
+      document.getElementById("total-projects").textContent = projects.length;
+      document.getElementById("winner-count").textContent = projects.filter(p => p.status === "winner").length;
+      document.getElementById("devpost-count").textContent = projects.filter(p => p.source === "devpost").length;
+      document.getElementById("validated-count").textContent = projects.filter(p => p.proofValidated).length;
+    }
+
+    function switchTab(tab, btn) {
+      currentTab = tab;
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      let filtered = allProjects;
+      if (tab === "devpost")  filtered = allProjects.filter(p => p.source === "devpost");
+      if (tab === "unstop")   filtered = allProjects.filter(p => p.source === "unstop");
+      if (tab === "winner")   filtered = allProjects.filter(p => p.status === "winner");
+      renderProjects(filtered);
+    }
+
+    function renderProjects(projects) {
+      const container = document.getElementById("projects-container");
+
+      if (projects.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-icon">📭</span>
+            <p>No projects found in this category.</p>
+            <a href="add.html" class="btn btn-primary">+ Add your first hackathon</a>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div class="project-list">
+        ${projects.map(p => renderProjectCard(p)).join("")}
+      </div>`;
+    }
+
+    function renderProjectCard(p) {
+      const sourceBadge = p.source === "devpost"
+        ? `<span class="badge badge-devpost">Devpost</span>`
+        : `<span class="badge badge-participated">Unstop</span>`;
+
+      const statusBadge = {
+        winner:      `<span class="badge badge-winner">🏆 Winner</span>`,
+        participated:`<span class="badge badge-participated">Participated</span>`,
+        registered:  `<span class="badge badge-registered">Registered</span>`
+      }[p.status] || "";
+
+      const validBadge = p.source === "unstop"
+        ? (p.proofValidated
+            ? `<span class="badge badge-validated">✅ Verified</span>`
+            : `<span class="badge badge-unvalidated">⚠️ Unverified</span>`)
+        : `<span class="badge badge-validated">✅ Auto-verified</span>`;
+
+      const date = new Date(p.submittedAt).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+      const linkHtml = p.link
+        ? `<a href="${p.link}" target="_blank" style="color:var(--accent); font-size:12px; text-decoration:none;">🔗 View Project</a>`
+        : "";
+
+      return `
+        <div class="project-item fade-in">
+          <div class="project-info">
+            <div class="project-name">${escapeHtml(p.hackathonName)}</div>
+            ${p.projectTitle ? `<div style="font-size:12px; color:var(--text-dim);">${escapeHtml(p.projectTitle)}</div>` : ""}
+            <div class="project-meta" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; align-items:center;">
+              ${sourceBadge} ${statusBadge} ${validBadge}
+              <span style="color:var(--text-dim); font-size:11px;">${date}</span>
+              ${linkHtml}
+            </div>
+            ${p.validationNote ? `<div style="font-size:11px; color:var(--text-dim); margin-top:4px;">${escapeHtml(p.validationNote)}</div>` : ""}
+          </div>
+          <div class="project-points">+${p.points}</div>
+        </div>`;
+    }
+
+    // ─── Devpost Modal ────────────────────────────────────────────
+    function showDevpostModal() {
+      document.getElementById("devpost-modal").style.display = "flex";
+    }
+
+    function closeDevpostModal() {
+      document.getElementById("devpost-modal").style.display = "none";
+    }
+
+    async function saveDevpostProfile() {
+      const url = document.getElementById("devpost-url").value.trim();
+      if (!url) { showInfo("Please enter your Devpost URL."); return; }
+
+      try {
+        const res = await apiFetch("/add-devpost-profile", "POST", { profileUrl: url });
+        const data = await res.json();
+        if (!res.ok) { showError(data.error); return; }
+        closeDevpostModal();
+        showSuccess("Devpost linked! Syncing your projects now...");
+        await fetchDevpost();
+      } catch {
+        showError("Failed to save Devpost profile.");
+      }
+    }
+
+    async function fetchDevpost() {
+      showInfo("Fetching Devpost projects... This may take a moment.");
+      try {
+        const res = await apiFetch("/fetch-devpost-projects");
+        const data = await res.json();
+        if (!res.ok) {
+          showError(data.error);
+        } else {
+          showSuccess(data.message);
+          loadProjects(); // Refresh list
+          // Refresh user stats
+          const me = await (await apiFetch("/auth/me")).json();
+          if (me.user) loadUserProfile(me.user);
+        }
+      } catch {
+        showError("Failed to fetch Devpost projects.");
+      }
+    }
+
+    // ─── Chatbot ──────────────────────────────────────────────────
+    function toggleChatbot() {
+      document.getElementById("chatbot-box").classList.toggle("open");
+    }
+
+    document.getElementById("chatbot-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") sendChatMessage();
+    });
+
+    async function sendChatMessage() {
+      const input = document.getElementById("chatbot-input");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const messages = document.getElementById("chatbot-messages");
+      messages.innerHTML += `<div class="chat-msg user">${escapeHtml(msg)}</div>`;
+      input.value = "";
+
+      const thinking = document.createElement("div");
+      thinking.className = "chat-msg bot";
+      thinking.innerHTML = '<span class="spinner"></span>';
+      messages.appendChild(thinking);
+      messages.scrollTop = messages.scrollHeight;
+
+      try {
+        const res = await fetch(`${API_BASE}/chatbot/suggest`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ message: msg, userId: currentUser?.id })
+        });
+        const data = await res.json();
+        thinking.remove();
+
+        let html = `<div>${escapeHtml(data.reply)}</div>`;
+        if (data.suggestions && data.suggestions.length) {
+          html += `<ul style="margin-top:8px; padding-left:14px;">`;
+          data.suggestions.forEach(s => {
+            html += `<li style="margin-bottom:4px;"><a href="${s.url}" target="_blank" style="color:var(--accent)">${escapeHtml(s.name)}</a> <span style="color:var(--text-dim);font-size:11px;">(${s.level})</span></li>`;
+          });
+          html += `</ul>`;
+        }
+        messages.innerHTML += `<div class="chat-msg bot">${html}</div>`;
+        messages.scrollTop = messages.scrollHeight;
+      } catch {
+        thinking.textContent = "Server not responding.";
+      }
+    }
+
+    // ─── Alert helpers ────────────────────────────────────────────
+    function showSuccess(msg) {
+      document.getElementById("success-text").textContent = msg;
+      document.getElementById("success-msg").classList.add("show");
+      setTimeout(() => document.getElementById("success-msg").classList.remove("show"), 5000);
+    }
+    function showError(msg) {
+      document.getElementById("error-text").textContent = msg;
+      document.getElementById("error-msg").classList.add("show");
+      setTimeout(() => document.getElementById("error-msg").classList.remove("show"), 6000);
+    }
+    function showInfo(msg) {
+      document.getElementById("info-text").textContent = msg;
+      document.getElementById("info-msg").classList.add("show");
+      setTimeout(() => document.getElementById("info-msg").classList.remove("show"), 4000);
+    }
+
+    async function handleLogout() {
+      await apiFetch("/auth/logout", "POST");
+      localStorage.removeItem("hacktrack_user");
+      window.location.href = "login.html";
+    }
+
+    // Close modal if clicking backdrop
+    document.getElementById("devpost-modal").addEventListener("click", function(e) {
+      if (e.target === this) closeDevpostModal();
+    });
+
+    init();
+  </script>
+
+</body>
+</html>

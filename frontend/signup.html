@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up — HackTrack</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-page">
+
+  <div style="width:100%; max-width:480px;">
+
+    <!-- Logo -->
+    <div style="text-align:center; margin-bottom:28px;">
+      <a href="index.html" class="nav-logo" style="justify-content:center; font-size:24px;">
+        ⚡ <span>Hack</span>Track
+      </a>
+    </div>
+
+    <div class="form-box">
+      <div class="form-title">Create your account</div>
+      <div class="form-subtitle">Start tracking your hackathon journey today — it's free</div>
+
+      <!-- Alert messages -->
+      <div class="alert alert-error" id="error-msg">
+        <span>⚠️</span>
+        <span id="error-text"></span>
+      </div>
+      <div class="alert alert-success" id="success-msg">
+        <span>✅</span>
+        <span id="success-text"></span>
+      </div>
+
+      <!-- Signup Form -->
+      <form id="signup-form" onsubmit="handleSignup(event)">
+
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input
+            type="text"
+            id="name"
+            placeholder="Jane Doe"
+            required
+            autocomplete="name"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="you@example.com"
+            required
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password <span style="color:var(--text-dim); font-size:11px;">(min 6 characters)</span></label>
+          <input
+            type="password"
+            id="password"
+            placeholder="Create a strong password"
+            required
+            minlength="6"
+            autocomplete="new-password"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-password">Confirm Password</label>
+          <input
+            type="password"
+            id="confirm-password"
+            placeholder="Repeat your password"
+            required
+            autocomplete="new-password"
+          />
+        </div>
+
+        <!-- Password strength indicator -->
+        <div id="pw-strength" style="display:none; margin-top:-10px; margin-bottom:14px; font-size:12px;"></div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="signup-btn">
+          Create Account →
+        </button>
+
+      </form>
+
+      <div class="divider"><span>or</span></div>
+
+      <div style="text-align:center; font-size:13px; color:var(--text-dim);">
+        Already have an account?
+        <a href="login.html" class="form-link">Log in</a>
+      </div>
+
+    </div>
+
+    <!-- Back link -->
+    <div style="text-align:center; margin-top:16px;">
+      <a href="index.html" style="color:var(--text-dim); font-size:12px; text-decoration:none;">
+        ← Back to home
+      </a>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // If already logged in, redirect
+    checkAuth().then(user => {
+      if (user) window.location.href = "dashboard.html";
+    });
+
+    // Password strength checker
+    document.getElementById("password").addEventListener("input", function () {
+      const pw = this.value;
+      const strengthEl = document.getElementById("pw-strength");
+      if (!pw) { strengthEl.style.display = "none"; return; }
+
+      let strength = 0;
+      if (pw.length >= 6)  strength++;
+      if (pw.length >= 10) strength++;
+      if (/[A-Z]/.test(pw)) strength++;
+      if (/[0-9]/.test(pw)) strength++;
+      if (/[^A-Za-z0-9]/.test(pw)) strength++;
+
+      const labels = ["", "Weak 🔴", "Fair 🟡", "Good 🟢", "Strong 💪", "Very Strong 🔐"];
+      const colors = ["", "var(--accent2)", "#ffa500", "var(--green)", "var(--green)", "var(--accent)"];
+
+      strengthEl.style.display = "block";
+      strengthEl.style.color = colors[strength] || "var(--text-dim)";
+      strengthEl.textContent = "Password strength: " + (labels[strength] || "");
+    });
+
+    async function handleSignup(e) {
+      e.preventDefault();
+
+      const name            = document.getElementById("name").value.trim();
+      const email           = document.getElementById("email").value.trim();
+      const password        = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirm-password").value;
+      const btn             = document.getElementById("signup-btn");
+
+      hideAlerts();
+
+      // Client-side validation
+      if (!name || !email || !password) {
+        showError("All fields are required.");
+        return;
+      }
+      if (password.length < 6) {
+        showError("Password must be at least 6 characters.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        showError("Passwords do not match.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Creating account...';
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.error || "Signup failed.");
+        } else {
+          localStorage.setItem("hacktrack_user", JSON.stringify(data.user));
+          showSuccess("Account created! Redirecting to your dashboard...");
+          setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
+        }
+
+      } catch (err) {
+        showError("Cannot connect to server. Is it running on port 5000?");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "Create Account →";
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById("error-text").textContent = msg;
+      document.getElementById("error-msg").classList.add("show");
+    }
+
+    function showSuccess(msg) {
+      document.getElementById("success-text").textContent = msg;
+      document.getElementById("success-msg").classList.add("show");
+    }
+
+    function hideAlerts() {
+      document.getElementById("error-msg").classList.remove("show");
+      document.getElementById("success-msg").classList.remove("show");
+    }
+  </script>
+
+</body>
+</html>

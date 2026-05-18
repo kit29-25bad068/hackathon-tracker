@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leaderboard — HackTrack</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── Navigation ─────────────────────────────────────────── -->
+  <nav>
+    <a href="index.html" class="nav-logo">⚡ <span>Hack</span>Track</a>
+    <div class="nav-links" id="nav-links">
+      <a href="leaderboard.html" class="active">Leaderboard</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="login.html" id="nav-login">Login</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- ─── Header ──────────────────────────────────────────────── -->
+    <div class="page-header">
+      <h1>🏆 Global Leaderboard</h1>
+      <p>Rankings are based on <strong>Final Score = Points × (Trust / 100)</strong>. Only verified submissions count!</p>
+    </div>
+
+    <!-- Top 3 Podium -->
+    <div id="podium" style="display:none; margin-bottom:32px;"></div>
+
+    <!-- Stats bar -->
+    <div class="stats-grid" style="margin-bottom:28px;">
+      <div class="stat-card">
+        <span class="stat-value" id="total-users">—</span>
+        <span class="stat-label">Participants</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="top-score" style="color:var(--yellow)">—</span>
+        <span class="stat-label">Top Score</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="avg-score" style="color:var(--accent)">—</span>
+        <span class="stat-label">Avg Score</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="your-rank" style="color:var(--green)">—</span>
+        <span class="stat-label">Your Rank</span>
+      </div>
+    </div>
+
+    <!-- Search / filter -->
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Search by name..."
+        style="flex:1; min-width:200px; background:var(--bg2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:var(--font-mono); font-size:13px; padding:10px 14px; outline:none;"
+        oninput="filterLeaderboard()"
+      />
+      <button class="btn btn-secondary" onclick="loadLeaderboard()">🔄 Refresh</button>
+    </div>
+
+    <!-- Leaderboard list -->
+    <div id="leaderboard-container">
+      <div class="empty-state">
+        <span class="empty-icon">⏳</span>
+        <p>Loading leaderboard...</p>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="card" style="margin-top:28px;">
+      <div class="card-title" style="margin-bottom:12px;">📊 Scoring Legend</div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:12px; font-size:13px;">
+        <div>
+          <div class="badge badge-registered" style="margin-bottom:4px;">Registered</div>
+          <div style="color:var(--text-dim);">= 5 base points</div>
+        </div>
+        <div>
+          <div class="badge badge-participated" style="margin-bottom:4px;">Participated</div>
+          <div style="color:var(--text-dim);">= 20 base points</div>
+        </div>
+        <div>
+          <div class="badge badge-winner" style="margin-bottom:4px;">🏆 Winner</div>
+          <div style="color:var(--text-dim);">= 50 base points</div>
+        </div>
+        <div>
+          <div style="color:var(--accent); font-weight:700; margin-bottom:4px;">Final Score</div>
+          <div style="color:var(--text-dim);">= points × (trust / 100)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Join CTA (shown when not logged in) -->
+    <div id="join-cta" style="display:none; text-align:center; margin-top:28px; padding:36px; background:linear-gradient(135deg, rgba(108,99,255,0.08), rgba(255,101,132,0.08)); border:1px solid rgba(108,99,255,0.2); border-radius:16px;">
+      <div style="font-family:var(--font-head); font-size:22px; font-weight:800; margin-bottom:8px;">Want to appear on the leaderboard?</div>
+      <p style="color:var(--text-dim); margin-bottom:20px;">Create a free account and start submitting your hackathon wins!</p>
+      <a href="signup.html" class="btn btn-primary">Get Started →</a>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    let fullLeaderboard = [];
+    let currentUserId = null;
+
+    async function init() {
+      // Check if logged in (non-blocking)
+      const user = await checkAuth();
+      if (user) {
+        currentUserId = user.id;
+        // Update nav
+        document.getElementById("nav-login").textContent = "Dashboard";
+        document.getElementById("nav-login").href = "dashboard.html";
+      } else {
+        document.getElementById("join-cta").style.display = "block";
+      }
+
+      loadLeaderboard();
+    }
+
+    async function loadLeaderboard() {
+      try {
+        const res = await fetch(`${API_BASE}/leaderboard`, { credentials: "include" });
+        const data = await res.json();
+        fullLeaderboard = data.leaderboard || [];
+        renderLeaderboard(fullLeaderboard);
+        renderStats(fullLeaderboard);
+        renderPodium(fullLeaderboard.slice(0, 3));
+      } catch (err) {
+        document.getElementById("leaderboard-container").innerHTML = `
+          <div class="alert alert-error show">
+            <span>⚠️</span>
+            <span>Failed to load leaderboard. Make sure the backend server is running on port 5000.</span>
+          </div>`;
+      }
+    }
+
+    function filterLeaderboard() {
+      const q = document.getElementById("search-input").value.toLowerCase();
+      const filtered = fullLeaderboard.filter(u =>
+        u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+      );
+      renderLeaderboard(filtered);
+    }
+
+    function renderStats(board) {
+      document.getElementById("total-users").textContent = board.length;
+      if (board.length > 0) {
+        document.getElementById("top-score").textContent = board[0].finalScore;
+        const avg = Math.round(board.reduce((s, u) => s + u.finalScore, 0) / board.length);
+        document.getElementById("avg-score").textContent = avg;
+      }
+
+      // Find logged-in user's rank
+      if (currentUserId) {
+        const rank = board.findIndex(u => String(u.id) === String(currentUserId)) + 1;
+        document.getElementById("your-rank").textContent = rank > 0 ? `#${rank}` : "—";
+      }
+    }
+
+    function renderPodium(top3) {
+      if (top3.length < 1) return;
+
+      const podium = document.getElementById("podium");
+      const medals = ["🥇", "🥈", "🥉"];
+      const colors = ["var(--yellow)", "#b4b4c8", "#c86432"];
+
+      podium.style.display = "grid";
+      podium.style.gridTemplateColumns = `repeat(${top3.length}, 1fr)`;
+      podium.style.gap = "12px";
+
+      podium.innerHTML = top3.map((u, i) => `
+        <div style="
+          text-align:center;
+          padding:20px 12px;
+          background:var(--bg2);
+          border:1px solid ${colors[i]}44;
+          border-radius:12px;
+        ">
+          <div style="font-size:28px;">${medals[i]}</div>
+          <div style="
+            width:48px; height:48px;
+            border-radius:50%;
+            background:linear-gradient(135deg, var(--accent), var(--accent2));
+            display:flex; align-items:center; justify-content:center;
+            font-family:var(--font-head); font-size:20px; font-weight:800;
+            margin:8px auto;
+          ">${u.name.charAt(0).toUpperCase()}</div>
+          <div style="font-family:var(--font-head); font-weight:700; font-size:15px;">${escapeHtml(u.name)}</div>
+          <div style="font-family:var(--font-head); font-size:22px; font-weight:800; color:${colors[i]}; margin-top:4px;">${u.finalScore}</div>
+          <div style="font-size:11px; color:var(--text-dim);">pts · trust ${u.trustScore}%</div>
+        </div>
+      `).join("");
+    }
+
+    function renderLeaderboard(board) {
+      const container = document.getElementById("leaderboard-container");
+
+      if (board.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-icon">🏜️</span>
+            <p>No users on the leaderboard yet. Be the first!</p>
+            <a href="signup.html" class="btn btn-primary">Sign Up Free</a>
+          </div>`;
+        return;
+      }
+
+      const html = board.map((u, i) => {
+        const rank = i + 1;
+        const rankClass = rank === 1 ? "rank-1" : rank === 2 ? "rank-2" : rank === 3 ? "rank-3" : "";
+        const rankEmoji = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : `#${rank}`;
+        const rankColor = rank === 1 ? "gold" : rank === 2 ? "silver" : rank === 3 ? "bronze" : "";
+        const isYou = String(u.id) === String(currentUserId);
+
+        return `
+          <div class="lb-item ${rankClass} fade-in" style="${isYou ? "border-color:rgba(0,245,160,0.5); background:rgba(0,245,160,0.04);" : ""}">
+            <div class="lb-rank ${rankColor}">${rankEmoji}</div>
+
+            <div style="
+              width:40px; height:40px;
+              border-radius:50%;
+              background:linear-gradient(135deg, var(--accent), var(--accent2));
+              display:flex; align-items:center; justify-content:center;
+              font-family:var(--font-head); font-size:16px; font-weight:800;
+              flex-shrink:0;
+            ">${u.name.charAt(0).toUpperCase()}</div>
+
+            <div class="lb-info">
+              <div class="lb-name">
+                ${escapeHtml(u.name)}
+                ${isYou ? '<span style="font-size:11px;color:var(--green);margin-left:6px;">← you</span>' : ""}
+              </div>
+              <div class="lb-meta">${u.email}</div>
+              <div class="trust-bar-wrap" style="margin-top:6px;">
+                <div class="trust-bar-bg">
+                  <div class="trust-bar-fill" style="width:${u.trustScore}%"></div>
+                </div>
+                <div class="trust-label">${u.trustScore}%</div>
+              </div>
+            </div>
+
+            <div class="lb-score">
+              <div class="lb-final">${u.finalScore}</div>
+              <div class="lb-breakdown">${u.totalPoints} pts × ${u.trustScore}%</div>
+            </div>
+          </div>`;
+      }).join("");
+
+      container.innerHTML = `<div class="leaderboard-list">${html}</div>`;
+    }
+
+    init();
+  </script>
+
+</body>
+</html>

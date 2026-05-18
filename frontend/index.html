@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HackTrack — AI-Powered Hackathon Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── Navigation ─────────────────────────────────────────── -->
+  <nav>
+    <a href="index.html" class="nav-logo">⚡ <span>Hack</span>Track</a>
+    <div class="nav-links">
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="login.html">Login</a>
+      <a href="signup.html" class="btn-nav">Sign Up</a>
+    </div>
+  </nav>
+
+  <!-- ─── Hero ───────────────────────────────────────────────── -->
+  <div class="hero">
+    <div class="hero-badge">🚀 Track · Validate · Compete</div>
+    <h1>Your Hackathon Journey,<br><span class="highlight">Tracked & Ranked</span></h1>
+    <p>
+      Auto-sync Devpost projects, submit Unstop proof, earn trust scores,
+      and climb the leaderboard with verified achievements.
+    </p>
+    <div class="hero-cta">
+      <a href="signup.html" class="btn btn-primary">Get Started Free →</a>
+      <a href="leaderboard.html" class="btn btn-secondary">View Leaderboard</a>
+    </div>
+  </div>
+
+  <!-- ─── Features ────────────────────────────────────────────── -->
+  <div class="container">
+    <div class="features-grid">
+
+      <div class="feature-card fade-in">
+        <span class="feature-icon">🔗</span>
+        <div class="feature-title">Devpost Auto-Sync</div>
+        <div class="feature-desc">
+          Link your Devpost profile once. We fetch all your hackathon
+          submissions automatically every 6 hours.
+        </div>
+      </div>
+
+      <div class="feature-card fade-in" style="animation-delay:0.1s">
+        <span class="feature-icon">📸</span>
+        <div class="feature-title">OCR Proof Validation</div>
+        <div class="feature-desc">
+          Upload screenshots or certificates for Unstop submissions.
+          Our OCR engine verifies authenticity automatically.
+        </div>
+      </div>
+
+      <div class="feature-card fade-in" style="animation-delay:0.2s">
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-title">Trust Score System</div>
+        <div class="feature-desc">
+          Every submission is scored for credibility. Verified proof
+          boosts your trust score; missing proof lowers it.
+        </div>
+      </div>
+
+      <div class="feature-card fade-in" style="animation-delay:0.3s">
+        <span class="feature-icon">🏆</span>
+        <div class="feature-title">Live Leaderboard</div>
+        <div class="feature-desc">
+          Rankings use <code>points × (trust/100)</code> so only
+          honest submissions rise to the top.
+        </div>
+      </div>
+
+      <div class="feature-card fade-in" style="animation-delay:0.4s">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title">AI Chatbot</div>
+        <div class="feature-desc">
+          Ask our built-in chatbot for hackathon recommendations
+          based on your history and skill level.
+        </div>
+      </div>
+
+      <div class="feature-card fade-in" style="animation-delay:0.5s">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Points System</div>
+        <div class="feature-desc">
+          Registered = 5 pts · Participated = 20 pts · Winner = 50 pts.
+          Earn more by winning and verifying your submissions.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── Points breakdown ─────────────────────────────────── -->
+    <div class="card" style="margin-top:8px;">
+      <div class="card-header">
+        <div class="card-title">📐 How Scoring Works</div>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-top:8px;">
+        <div style="text-align:center; padding:16px; background:var(--bg3); border-radius:8px;">
+          <div style="font-size:28px; font-family:var(--font-head); font-weight:800; color:var(--green);">5 pts</div>
+          <div class="badge badge-registered" style="margin-top:8px;">Registered</div>
+        </div>
+        <div style="text-align:center; padding:16px; background:var(--bg3); border-radius:8px;">
+          <div style="font-size:28px; font-family:var(--font-head); font-weight:800; color:var(--accent);">20 pts</div>
+          <div class="badge badge-participated" style="margin-top:8px;">Participated</div>
+        </div>
+        <div style="text-align:center; padding:16px; background:var(--bg3); border-radius:8px;">
+          <div style="font-size:28px; font-family:var(--font-head); font-weight:800; color:var(--yellow);">50 pts</div>
+          <div class="badge badge-winner" style="margin-top:8px;">Winner 🏆</div>
+        </div>
+        <div style="text-align:center; padding:16px; background:var(--bg3); border-radius:8px; grid-column: span 1;">
+          <div style="font-size:13px; color:var(--text-dim); margin-bottom:6px;">Final Score Formula</div>
+          <div style="font-family:var(--font-mono); font-size:13px; color:var(--accent);">
+            Points × (Trust / 100)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CTA Banner ───────────────────────────────────────── -->
+    <div style="text-align:center; margin:48px 0 16px; padding:48px; background:linear-gradient(135deg, rgba(108,99,255,0.1), rgba(255,101,132,0.1)); border:1px solid rgba(108,99,255,0.2); border-radius:16px;">
+      <div style="font-family:var(--font-head); font-size:28px; font-weight:800; margin-bottom:12px;">Ready to climb the leaderboard?</div>
+      <p style="color:var(--text-dim); margin-bottom:24px;">Create your account and start tracking in under 60 seconds.</p>
+      <a href="signup.html" class="btn btn-primary" style="font-size:15px; padding:14px 32px;">Create Free Account →</a>
+    </div>
+
+  </div>
+
+  <!-- ─── Chatbot Widget ──────────────────────────────────────── -->
+  <div class="chatbot-widget">
+    <div class="chatbot-box" id="chatbot-box">
+      <div class="chatbot-header">🤖 HackBot — Ask me anything!</div>
+      <div class="chatbot-messages" id="chatbot-messages">
+        <div class="chat-msg bot">Hi! 👋 Ask me about hackathons, scoring, or type <strong>"suggest"</strong> for recommendations!</div>
+      </div>
+      <div class="chatbot-input-row">
+        <input type="text" id="chatbot-input" placeholder="Ask something..." />
+        <button onclick="sendChatMessage()">➤</button>
+      </div>
+    </div>
+    <button class="chatbot-toggle" onclick="toggleChatbot()">🤖</button>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Chatbot for home page (no user session needed)
+    function toggleChatbot() {
+      document.getElementById("chatbot-box").classList.toggle("open");
+    }
+
+    document.getElementById("chatbot-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") sendChatMessage();
+    });
+
+    async function sendChatMessage() {
+      const input = document.getElementById("chatbot-input");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const messages = document.getElementById("chatbot-messages");
+
+      // Show user message
+      messages.innerHTML += `<div class="chat-msg user">${escapeHtml(msg)}</div>`;
+      input.value = "";
+      messages.scrollTop = messages.scrollHeight;
+
+      // Thinking indicator
+      const thinking = document.createElement("div");
+      thinking.className = "chat-msg bot";
+      thinking.innerHTML = '<span class="spinner"></span> Thinking...';
+      messages.appendChild(thinking);
+
+      try {
+        const res = await fetch("http://localhost:5000/api/chatbot/suggest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        thinking.remove();
+
+        let html = `<div>${escapeHtml(data.reply)}</div>`;
+        if (data.suggestions && data.suggestions.length > 0) {
+          html += `<ul style="margin-top:8px; padding-left:16px; list-style:disc;">`;
+          data.suggestions.forEach(s => {
+            html += `<li><a href="${s.url}" target="_blank" style="color:var(--accent)">${escapeHtml(s.name)}</a> <span style="color:var(--text-dim);font-size:11px;">(${s.level})</span></li>`;
+          });
+          html += `</ul>`;
+        }
+
+        messages.innerHTML += `<div class="chat-msg bot">${html}</div>`;
+        messages.scrollTop = messages.scrollHeight;
+      } catch {
+        thinking.innerHTML = "Sorry, I can't connect right now. Make sure the server is running!";
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+  </script>
+
+</body>
+</html>
