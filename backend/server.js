@@ -41,8 +41,7 @@ app.use(session({
 }));
 
 // ─── MongoDB Connection ───────────────────────────────────────
-const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/hackathon_tracker";
-
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://kit2925bad068_db_user:9yArQHIy8Y3M9D0O@cluster0.bvywten.mongodb.net/hackathon_tracker?retryWrites=true&w=majority&appName=Cluster0";
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ MongoDB connected successfully"))
   .catch(err => {
