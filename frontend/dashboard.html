@@ -76,7 +76,9 @@
           <!-- Actions -->
           <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
             <a href="add.html" class="btn btn-primary btn-full">+ Add Hackathon</a>
-            <button class="btn btn-secondary btn-full" onclick="showDevpostModal()">🔗 Link Devpost</button>
+            <div id="devpost-action-btn">
+              <button class="btn btn-secondary btn-full" onclick="showDevpostModal()">🔗 Link Devpost</button>
+            </div>
             <button class="btn btn-secondary btn-full" onclick="fetchDevpost()">🔄 Sync Devpost</button>
           </div>
         </div>
@@ -182,6 +184,19 @@
       const trust = user.trustScore || 50;
       document.getElementById("trust-bar").style.width = trust + "%";
       document.getElementById("trust-label").textContent = trust + "%";
+      // Show Devpost button based on whether profile is linked
+      const devpostBtn = document.getElementById("devpost-action-btn");
+      if (user.devpostProfile) {
+        devpostBtn.innerHTML = `
+          <a href="${user.devpostProfile}" target="_blank" class="btn btn-full" 
+            style="background:var(--accent2); color:#fff; border-color:var(--accent2); text-align:center; text-decoration:none; display:block;">
+            🚀 View Devpost Profile
+          </a>
+          <button class="btn btn-secondary btn-full" style="margin-top:6px;" onclick="showDevpostModal()">✏️ Change Devpost</button>
+        `;
+      } else {
+        devpostBtn.innerHTML = `<button class="btn btn-secondary btn-full" onclick="showDevpostModal()">🔗 Link Devpost</button>`;
+      }
     }
 
     async function loadProjects() {
